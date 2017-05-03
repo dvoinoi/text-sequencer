@@ -34,6 +34,14 @@ var loadText = (fileName, callBack) => {
     }
 }
 
+var fileWasUpdated = (fileName, callback) => {
+    file.watchFile(fileName, (curr, prev) => {
+        if (Date.parse(curr.mtime) > Date.parse(prev.mtime)) {
+            main();
+        }
+    });
+}
+
 var playNote = (i) => {
     var nextNote = i;
     if(typeof text[nextNote] == 'undefined') {
@@ -41,14 +49,14 @@ var playNote = (i) => {
     }
 
     var noteNumber = text[nextNote].charCodeAt(0);
-    if (text[nextNote] == ' ') {
-        noteNumber = 0; // silence!
-    }
 
-    process.stdout.write(text[nextNote] + '-' + noteNumber + ' ')
+    // process.stdout.write(text[nextNote] + '-' + noteNumber + ' ')
 
     // play
-    output.sendMessage([144, noteNumber, 127]);
+    if (text[nextNote] != ' ') { // silence!
+        output.sendMessage([144, noteNumber, 127]);
+    }
+
     nextNote++;
 
     setTimeout((nextNote) => {
@@ -63,8 +71,15 @@ var playNote = (i) => {
 
 }
 
-loadText(process.argv[2], () => {
-    playNote(0);
-});
+function main(extra) {
+    loadText(process.argv[2], () => {
+        playNote(0);
+        if (extra) {
+            extra();
+        }
+    });
+}
+
+main(()=>{fileWasUpdated(process.argv[2])});
 
 
