@@ -16,6 +16,7 @@ if (typeof process.argv[2] == 'undefined' || typeof process.argv[3] == 'undefine
     process.exit(1)
 }
 
+var fileName = process.argv[2];
 var text = null;
 var bpm = 60000 / process.argv[3];
 
@@ -24,7 +25,7 @@ if (typeof process.argv[4] != 'undefined') {
     bpm = 60000 / process.argv[3] / process.argv[4];
 }
 
-var loadText = (fileName, callBack) => {
+var loadFile = (callBack) => {
     try {
       text = file.readFileSync(fileName).toString();
       callBack();
@@ -34,10 +35,12 @@ var loadText = (fileName, callBack) => {
     }
 }
 
-var fileWasUpdated = (fileName, callback) => {
+var watchFileUpdate = () => {
     file.watchFile(fileName, (curr, prev) => {
         if (Date.parse(curr.mtime) > Date.parse(prev.mtime)) {
-            main();
+            loadFile(()=>{
+                debug('file updated', "\n");
+            })
         }
     });
 }
@@ -50,7 +53,7 @@ var playNote = (i) => {
 
     var noteNumber = text[nextNote].charCodeAt(0);
 
-    // process.stdout.write(text[nextNote] + '-' + noteNumber + ' ')
+    debug(text[nextNote]+':'+noteNumber+' ')
 
     // play
     if (text[nextNote] != ' ') { // silence!
@@ -71,15 +74,23 @@ var playNote = (i) => {
 
 }
 
-function main(extra) {
-    loadText(process.argv[2], () => {
-        playNote(0);
-        if (extra) {
-            extra();
-        }
+function main() {
+    loadFile(() => {
+        playNote(0)
+        watchFileUpdate()
     });
 }
 
-main(()=>{fileWasUpdated(process.argv[2])});
+function debug(w, end) {
+    if (typeof process.argv[4] == 'undefined') {
+        return
+    }
+    if (typeof end == 'undefined') {
+        end = ''
+    }
+    process.stdout.write(w + end)
+}
+
+main();
 
 
