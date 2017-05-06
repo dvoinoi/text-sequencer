@@ -16,18 +16,21 @@ if (typeof process.argv[2] == 'undefined' || typeof process.argv[3] == 'undefine
     process.exit(1)
 }
 
-var fileName = process.argv[2];
-var text = null;
-var bpm = 60000 / process.argv[3];
+var fileName = process.argv[2]
+var text = null
+var bpm = 60000 / process.argv[3]
 
 if (typeof process.argv[4] != 'undefined') {
     // extra grid params
-    bpm = 60000 / process.argv[3] / process.argv[4];
+    bpm = 60000 / process.argv[3] / process.argv[4]
 }
 
 var loadFile = (callBack) => {
     try {
-      text = file.readFileSync(fileName).toString();
+      text = file.readFileSync(fileName).toString()
+      if (text == '') {
+        text = ' '
+      }
       callBack();
     } catch(e) {
       console.log(e)
@@ -39,37 +42,37 @@ var watchFileUpdate = () => {
     file.watchFile(fileName, (curr, prev) => {
         if (Date.parse(curr.mtime) > Date.parse(prev.mtime)) {
             loadFile(()=>{
-                debug('file updated', "\n");
+                debug('file updated', "\n")
             })
         }
     });
 }
 
 var playNote = (i) => {
-    var nextNote = i;
+    var nextNote = i
     if(typeof text[nextNote] == 'undefined') {
-       nextNote = 0;
+       nextNote = 0
     }
 
-    var noteNumber = text[nextNote].charCodeAt(0);
+    var noteNumber = text[nextNote].charCodeAt(0)
 
     debug(text[nextNote]+':'+noteNumber+' ')
 
     // play
-    if (text[nextNote] != ' ') { // silence!
-        output.sendMessage([144, noteNumber, 127]);
+    if (text[nextNote] != ' ' && text[nextNote] != "\n") { // silence!
+        output.sendMessage([144, noteNumber, 127])
     }
 
     nextNote++;
 
     setTimeout((nextNote) => {
-         playNote(nextNote);
+         playNote(nextNote)
       }, bpm, nextNote)
 
     // off, note length can be defined externally
     // so we are not really interested, as long as it does go off
     setTimeout((noteNumber) => {
-         output.sendMessage([128, noteNumber, 40]);
+         output.sendMessage([128, noteNumber, 40])
       }, bpm, noteNumber)
 
 }
@@ -82,7 +85,7 @@ function main() {
 }
 
 function debug(w, end) {
-    if (typeof process.argv[4] == 'undefined') {
+    if (typeof process.argv[5] == 'undefined') {
         return
     }
     if (typeof end == 'undefined') {
