@@ -22,7 +22,7 @@ var bpm = 60000 / process.argv[3]
 
 if (typeof process.argv[4] != 'undefined') {
     // extra grid params
-    bpm = 60000 / process.argv[3] / process.argv[4]
+    bpm = bpm / process.argv[4]
 }
 
 var loadFile = (callBack) => {
